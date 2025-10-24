@@ -5,6 +5,17 @@ from constants import TARGET
 from vim import open_vim
 import text
 import styles
+from xml.etree.ElementTree import Element, SubElement, tostring, register_namespace
+
+SVG_NS = 'http://www.w3.org/2000/svg'
+INKSCAPE_NS = 'http://www.inkscape.org/namespaces/inkscape'
+
+# Register namespaces once so ElementTree renders the expected prefixes when
+# serialising the XML snippet that Inkscape reads from the clipboard.  Inkscape
+# 1.x tightened its namespace validation which means the legacy clipboard XML
+# without the explicit namespaces is ignored.
+register_namespace('', SVG_NS)
+register_namespace('inkscape', INKSCAPE_NS)
 
 # Set of pressed keys
 pressed = set()
@@ -180,35 +191,45 @@ def paste_style(self, combination):
     # Later on, we'll write this svg to the clipboard, and send Ctrl+Shift+V to
     # Inkscape, to paste this style.
 
-    svg = '''
-          <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-          <svg>
-          '''
+    svg = Element('svg', {
+        'width': '1',
+        'height': '1',
+        'version': '1.1',
+        'viewBox': '0 0 1 1',
+    })
+
     # If a marker is applied, add its definition to the clipboard
     # Arrow styles stolen from tikz
-    if ('marker-end' in style and style['marker-end'] != 'none') or \
-            ('marker-start' in style and style['marker-start'] != 'none'):
-        svg += f'''
-                <defs id="marker-defs">
-                <marker
-                id="marker-arrow-{w}"
-                orient="auto-start-reverse"
-                refY="0" refX="0"
-                markerHeight="1.690" markerWidth="0.911">
-                  <g transform="scale({(2.40 * w + 3.87)/(4.5*w)})">
-                    <path
-                       d="M -1.55415,2.0722 C -1.42464,1.29512 0,0.1295 0.38852,0 0,-0.1295 -1.42464,-1.29512 -1.55415,-2.0722"
-                       style="fill:none;stroke:#000000;stroke-width:{0.6};stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
-                       inkscape:connector-curvature="0" />
-                   </g>
-                </marker>
-                </defs>
-                '''
+    marker_required = (
+        ('marker-end' in style and style['marker-end'] != 'none') or
+        ('marker-start' in style and style['marker-start'] != 'none')
+    )
+    if marker_required:
+        defs = SubElement(svg, 'defs', {'id': 'marker-defs'})
+        marker = SubElement(defs, 'marker', {
+            'id': f'marker-arrow-{w}',
+            'orient': 'auto-start-reverse',
+            'refY': '0',
+            'refX': '0',
+            'markerHeight': '1.690',
+            'markerWidth': '0.911',
+        })
+        g = SubElement(marker, 'g', {
+            'transform': f'scale({(2.40 * w + 3.87)/(4.5*w)})'
+        })
+        SubElement(g, 'path', {
+            'd': 'M -1.55415,2.0722 C -1.42464,1.29512 0,0.1295 0.38852,0 0,-0.1295 -1.42464,-1.29512 -1.55415,-2.0722',
+            'style': 'fill:none;stroke:#000000;stroke-width:0.6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1',
+            f'{{{INKSCAPE_NS}}}connector-curvature': '0'
+        })
 
     style_string = ';'.join('{}: {}'.format(key, value)
                             for key, value in sorted(style.items(), key=lambda x: x[0])
                            )
-    svg += f'<inkscape:clipboard style="{style_string}" /></svg>'
 
-    copy(svg, target=TARGET)
+    SubElement(svg, f'{{{INKSCAPE_NS}}}clipboard', {
+        'style': style_string
+    })
+
+    copy('<?xml version="1.0" encoding="UTF-8" standalone="no"?>' + tostring(svg, encoding='unicode'), target=TARGET)
     self.press('v', X.ControlMask | X.ShiftMask)

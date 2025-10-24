@@ -7,6 +7,7 @@ from config import config
 from Xlib import X
 
 def open_vim(self, compile_latex):
+    """Launch the external editor (Neovim by default) to compose LaTeX."""
     f = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.tex')
 
     f.write('$$')
