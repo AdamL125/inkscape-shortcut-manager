@@ -7,7 +7,7 @@ def open_editor(filename):
         'urxvt',
         '-geometry', '60x5',
         '-name', 'popup-bottom-center',
-        '-e', "vim",
+        '-e', 'nvim',
         f"{filename}",
     ])
 

@@ -73,7 +73,26 @@ def create(inkscape_id):
     m.listen()
 
 def is_inkscape(window):
-    return (window.get_wm_class() and 'inkscape' in window.                        get_wm_class()[0])
+    """Return True when *window* belongs to an Inkscape instance."""
+    try:
+        wm_class = window.get_wm_class()
+    except (Xlib.error.BadWindow, AttributeError):
+        return False
+
+    if wm_class:
+        lowered = [entry.lower() for entry in wm_class if isinstance(entry, str)]
+        if any('inkscape' in entry for entry in lowered):
+            return True
+
+    try:
+        name = window.get_wm_name()
+    except Xlib.error.BadWindow:
+        name = None
+
+    if isinstance(name, str) and 'inkscape' in name.lower():
+        return True
+
+    return False
 
 def main():
     disp = Display()
@@ -84,7 +103,7 @@ def main():
     for window in root.query_tree().children:
         if is_inkscape(window):
             print('Found existing window')
-            listen = threading.Thread(target=create, args=[window.id])
+            listen = threading.Thread(target=create, args=[window.id], daemon=True)
             listen.start()
 
 
@@ -97,7 +116,7 @@ def main():
             try:
                 if is_inkscape(window):
                     print('New window!')
-                    listen = threading.Thread(target=create, args=[window.id])
+                    listen = threading.Thread(target=create, args=[window.id], daemon=True)
                     listen.start()
 
             except Xlib.error.BadWindow:

@@ -1,6 +1,12 @@
 # Inkscape shortcut manager
 
-*A shortcut manager that speeds up drawing (mathematical) figures in [Inkscape](https://inkscape.org/).*
+*A shortcut manager that speeds up drawing (mathematical) figures in [Inkscape](https://inkscape.org/).*  
+Updated to work with the latest Inkscape releases (1.3 and later) and Neovim by default.
+
+> ℹ️ **Compatibility note** — Inkscape 1.x requires clipboard snippets that use
+> the `inkscape:clipboard` element to explicitly declare the Inkscape namespace.
+> The shortcut chords in this project now emit the XML structure documented for
+> Inkscape 1.2/1.3 so that pasted styles continue to register correctly.
 
 ## Problem
 
@@ -17,7 +23,7 @@ I created a custom shortcut manager that intercepts all keyboard events sent to 
 
 - **Press clusters of keys (key chords) to apply common styles.** Pressing <kbd>d</kbd>+<kbd>a</kbd> gives a **d**otted **a**rrow, <kbd>f</kbd>+<kbd>s</kbd> **f**ills the selection in gray and adds a **s**troke. You want a circle that's **d**otted and **f**illed? Press <kbd>f</kbd> + <kbd>d</kbd>. Try pressing combinations of <kbd>s</kbd>, <kbd>a</kbd>, <kbd>d</kbd>, <kbd>g</kbd>, <kbd>h</kbd>, <kbd>x</kbd>, <kbd>e</kbd>, <kbd>b</kbd>, <kbd>f</kbd>, <kbd>w</kbd>. Being able to combine these common styles by pressing key chords feels quite intuitive after a while.
 - **Save custom styles and objects.** Press <kbd>Shift+S</kbd> or <kbd>Shift+A</kbd> to give a style or object a name. Use it by pressing <kbd>s</kbd> or <kbd>a</kbd> and typing the name. For common styles that aren't covered by the key chords, this comes in handy.
-- **Use your editor to write LaTeX.** Pressing <kbd>t</kbd> opens an instance of vim (or any editor you want). Write some LaTeX, close it, and the shortcut manager pastes the text in the figure. Pressing <kbd>Shift+T</kbd> does the same but renders the LaTeX as an svg and adds it to the document.
+- **Use your editor to write LaTeX.** Pressing <kbd>t</kbd> opens an instance of Neovim (or any editor you want). Write some LaTeX, close it, and the shortcut manager pastes the text in the figure. Pressing <kbd>Shift+T</kbd> does the same but renders the LaTeX as an svg and adds it to the document.
 - **Ergonomic shortcuts for frequently used functions**. Press <kbd>w</kbd> for pencil, <kbd>x</kbd> to toggle snapping, <kbd>f</kbd> for Bézier, <kbd>z</kbd> to undo, <kbd>Shift</kbd>+<kbd>z</kbd> to delete and <kbd>\`</kbd> to dis/enable the shortcut manager.
 
 For more details and context, feel free to read my [blog post](https://castel.dev/post/lecture-notes-2).
@@ -36,7 +42,7 @@ Use the shortcut manager by running `python3 main.py` and opening an Inkscape wi
 
 ## Configuration
 
-You can configure the shortcut manager by creating a file located at `~/.config/inkscape-shortcut-manager/config.py`. You can override the rofi theme, font, editor, as well as the LaTeX template that's being used. It's merged with the default config located at `config.py`. An example configuration file is located in the `examples` directory.
+You can configure the shortcut manager by creating a file located at `~/.config/inkscape-shortcut-manager/config.py`. You can override the rofi theme, font, terminal/editor command (Neovim is used by default), as well as the LaTeX template that's being used. It's merged with the default config located at `config.py`. An example configuration file is located in the `examples` directory.
 
 ## Related
 
